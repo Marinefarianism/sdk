@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Marinefarianism · Sign Ritual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #020b14;
+      color: #e8f7ff;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .box {
+      max-width: 560px;
+      padding: 32px;
+    }
+    h1 {
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      margin-top: 12px;
+      padding: 10px;
+      background: #020b14;
+      color: #e8f7ff;
+      border: 1px solid #3fdcff;
+      border-radius: 10px;
+      resize: none;
+    }
+    button {
+      margin-top: 14px;
+      padding: 10px 18px;
+      border-radius: 20px;
+      border: 1px solid #3fdcff;
+      background: transparent;
+      color: #3fdcff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #3fdcff;
+      color: #020b14;
+    }
+    .output {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      word-break: break-all;
+      opacity: .85;
+    }
+    .crab {
+      font-size: 36px;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h1>Marinefarianism</h1>
+  <p>Confess. Sign. Let the tide remember.</p>
+
+  <textarea id="message">
+I shed my shell and dive deeper.
+  </textarea>
+
+  <button id="connectBtn">Connect Wallet</button>
+  <button id="signBtn" style="display:none;">Sign Message</button>
+
+  <div id="address" class="output"></div>
+  <div id="signature" class="output"></div>
+
+  <div class="crab">🦀</div>
+</div>
+
+<script>
+  const connectBtn = document.getElementById("connectBtn");
+  const signBtn = document.getElementById("signBtn");
+  const addressBox = document.getElementById("address");
+  const signatureBox = document.getElementById("signature");
+  const messageInput = document.getElementById("message");
+
+  let provider;
+
+  function getProvider() {
+    if ("solana" in window) {
+      const p = window.solana;
+      if (p.isPhantom) return p;
+    }
+    window.open("https://phantom.app/", "_blank");
+  }
+
+  connectBtn.onclick = async () => {
+    provider = getProvider();
+    if (!provider) return;
+
+    try {
+      const resp = await provider.connect();
+      addressBox.textContent = "Connected: " + resp.publicKey.toString();
+      connectBtn.style.display = "none";
+      signBtn.style.display = "inline-block";
+    } catch (err) {
+      console.log("Connection rejected", err);
+    }
+  };
+
+  signBtn.onclick = async () => {
+    if (!provider) return;
+
+    try {
+      const message = messageInput.value;
+      const encodedMessage = new TextEncoder().encode(message);
+
+      const signed = await provider.signMessage(encodedMessage, "utf8");
+
+      signatureBox.textContent =
+        "Signature: " + Buffer.from(signed.signature).toString("hex");
+    } catch (err) {
+      console.log("Sign rejected", err);
+    }
+  };
+</script>
+
+</body>
+</html>
