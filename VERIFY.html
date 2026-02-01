@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Marinefarianism · Verify Ritual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- crypto lib (ed25519) -->
+  <script src="https://unpkg.com/tweetnacl@1.0.3/nacl.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #020b14;
+      color: #e8f7ff;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .box {
+      max-width: 600px;
+      padding: 32px;
+    }
+    h1 {
+      font-size: 2.3rem;
+      margin-bottom: 8px;
+    }
+    textarea, input {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background: #020b14;
+      color: #e8f7ff;
+      border: 1px solid #3fdcff;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+    button {
+      margin-top: 14px;
+      padding: 10px 18px;
+      border-radius: 20px;
+      border: 1px solid #3fdcff;
+      background: transparent;
+      color: #3fdcff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #3fdcff;
+      color: #020b14;
+    }
+    .result {
+      margin-top: 14px;
+      font-weight: bold;
+    }
+    .valid { color: #4dffb2; }
+    .invalid { color: #ff6b6b; }
+    .crab {
+      font-size: 34px;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h1>Marinefarianism</h1>
+  <p>Verify the confession. Let truth surface.</p>
+
+  <textarea id="message" placeholder="Original message"></textarea>
+  <input id="signature" placeholder="Signature (hex)" />
+  <input id="pubkey" placeholder="Wallet public key (base58)" />
+
+  <button id="verifyBtn">Verify Signature</button>
+
+  <div id="result" class="result"></div>
+  <div class="crab">🦀</div>
+</div>
+
+<script>
+  // --- helpers ---
+  function hexToUint8Array(hex) {
+    return new Uint8Array(
+      hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))
+    );
+  }
+
+  function base58ToUint8Array(base58) {
+    const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    const bytes = [0];
+    for (let char of base58) {
+      const value = alphabet.indexOf(char);
+      if (value < 0) return null;
+      for (let i = 0; i < bytes.length; i++) bytes[i] *= 58;
+      bytes[0] += value;
+      let carry = 0;
+      for (let i = 0; i < bytes.length; ++i) {
+        bytes[i] += carry;
+        carry = bytes[i] >> 8;
+        bytes[i] &= 0xff;
+      }
+      while (carry) {
+        bytes.push(carry & 0xff);
+        carry >>= 8;
+      }
+    }
+    return new Uint8Array(bytes.reverse());
+  }
+
+  // --- verify ---
+  document.getElementById("verifyBtn").onclick = () => {
+    const message = document.getElementById("message").value;
+    const signatureHex = document.getElementById("signature").value.trim();
+    const pubkeyBase58 = document.getElementById("pubkey").value.trim();
+    const resultBox = document.getElementById("result");
+
+    try {
+      cons
